@@ -1,13 +1,7 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,6 +18,10 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
+
+import messaging from '@react-native-firebase/messaging';
+
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -62,6 +60,23 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    getFcmToken();
+    subscribe();
+    return () => {
+      subscribe()
+    };
+  }, []);
+
+  const getFcmToken = async () => {
+    const fcmToken = await messaging().getToken();
+    console.log('[+] FCM Token :: ', fcmToken);
+  };
+
+  const subscribe = messaging().onMessage(async remoteMessage => {
+    console.log('[+] Remote Message ', JSON.stringify(remoteMessage));
+  });
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -79,6 +94,7 @@ function App(): React.JSX.Element {
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
+            <Button title={'Click Me'} onPress={() => getFcmToken()} />
           </Section>
           <Section title="See Your Changes">
             <ReloadInstructions />

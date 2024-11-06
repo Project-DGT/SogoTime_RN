@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "528577151846",
+    "project_id": "sogotime-765b6",
+    "storage_bucket": "sogotime-765b6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528577151846:android:2b25a7de0a18910366fea7",
+        "android_client_info": {
+          "package_name": "com.sogotime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBp9sgKXpSF36OJJpDflgoFaeypWo4hngY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
