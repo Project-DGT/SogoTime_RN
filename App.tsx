@@ -21,7 +21,7 @@ import {
 
 
 import messaging from '@react-native-firebase/messaging';
-import MainScreen from './feature/main';
+import MainScreen from './src/main';
 
 
 type SectionProps = PropsWithChildren<{
