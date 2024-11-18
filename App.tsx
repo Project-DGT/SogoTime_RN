@@ -21,7 +21,8 @@ import {
 
 
 import messaging from '@react-native-firebase/messaging';
-import MainScreen from './src/main';
+import MainScreen from './src/feature/main';
+import InputScreen from './src/feature/input';
 
 
 type SectionProps = PropsWithChildren<{
@@ -84,7 +85,7 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <MainScreen/>
+      <InputScreen/>
       {/* <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>

@@ -1,5 +1,5 @@
 import { Button, Image, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native"
-import GearIcon from "../../assets/ic_gear.png"
+import GearIcon from "../../../assets/ic_gear.png"
 import { useEffect, useRef, useState } from "react";
 
 const MainScreen = () => {
