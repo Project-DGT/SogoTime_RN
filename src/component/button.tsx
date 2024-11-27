@@ -28,7 +28,7 @@ const SogoTimeButton = (
       fontSize: 16,
       fontWeight: '700',
       color: "#FFFFFF"
-    }}>저장하기</Text>
+    }}>{text}</Text>
   </TouchableHighlight>
   )
 }

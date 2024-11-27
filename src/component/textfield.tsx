@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInputProps,
   Image,
+  InputModeOptions,
 } from 'react-native';
 
 import CircleXmarkIcon from "../../assets/ic_circle_xmark.png"
@@ -20,6 +21,7 @@ interface DodamTextFieldProps extends TextInputProps {
   supportText?: string;
   isError?: boolean;
   enabled?: boolean;
+  inputMode?: InputModeOptions | undefined;
   onRemoveRequest?: () => void;
 }
 
@@ -40,6 +42,7 @@ export const DodamTextField: React.FC<DodamTextFieldProps> = ({
   enabled = true,
   keyboardType = 'default',
   maxLength,
+  inputMode,
   onRemoveRequest = () => {},
   ...textInputProps
 }) => {
@@ -98,6 +101,7 @@ export const DodamTextField: React.FC<DodamTextFieldProps> = ({
           maxLength={maxLength}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          inputMode={inputMode}
           {...textInputProps}
         />
         {value ? (
