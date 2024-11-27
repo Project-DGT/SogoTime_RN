@@ -22,6 +22,10 @@ interface DodamTextFieldProps extends TextInputProps {
   isError?: boolean;
   enabled?: boolean;
   inputMode?: InputModeOptions | undefined;
+  selection?: {
+    start: number;
+    end?: number | undefined;
+} | undefined;
   onRemoveRequest?: () => void;
 }
 
@@ -43,6 +47,7 @@ export const DodamTextField: React.FC<DodamTextFieldProps> = ({
   keyboardType = 'default',
   maxLength,
   inputMode,
+  selection,
   onRemoveRequest = () => {},
   ...textInputProps
 }) => {
@@ -102,6 +107,7 @@ export const DodamTextField: React.FC<DodamTextFieldProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           inputMode={inputMode}
+          selection={selection}
           {...textInputProps}
         />
         {value ? (
