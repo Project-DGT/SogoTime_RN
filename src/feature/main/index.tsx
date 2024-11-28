@@ -1,23 +1,23 @@
 import { Button, Image, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native"
 import GearIcon from "../../../assets/ic_gear.png"
 import { useEffect, useRef, useState } from "react";
+import { getCurrentClassTime, useTimetable } from "../../hooks/useTimetable";
+
 
 const MainScreen = () => {
 
   const [selectedWeekday, setSelectedWeekday] = useState("월요일 / Mon");
-  // const []
   const scrollRef = useRef<ScrollView>(null);
-  const [itemsScrollIndex, setItemScrollIndex] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const {timetable, itemsScrollIndex, setItemScrollIndex} = useTimetable();
+  const [nowClassTimeIndex, setNowClassTimeIndex] = useState(-1);
 
-
-  setTimeout(() => {
+  const scrollToIndex = (index: number) => {
     if (!scrollRef.current) return
     console.log(itemsScrollIndex);
     
 
-    const getIndex = 1;
     let offsetY = 0.0;
-    for (let i = 0; i < getIndex; i++) {
+    for (let i = 0; i < index; i++) {
       if (i == 0) {
         offsetY + 16;
       }
@@ -28,7 +28,33 @@ const MainScreen = () => {
     
  
     scrollRef.current.scrollTo({y: offsetY, animated: true})
-  }, 1000);
+  }
+  
+  useEffect(() => {
+    if (itemsScrollIndex.length == 0) {
+      return;
+    }
+    for (let i = 0; i < itemsScrollIndex.length; i++) {
+      if (itemsScrollIndex[i] == 0) {
+        return;
+      }
+    }
+    
+    const date = new Date();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+
+    const currentTime = hour * 60 + minute;
+    for (let i = itemsScrollIndex.length - 1; i >= 0; i--) {
+      const classStartTime = getCurrentClassTime(i); // 교시 시작 시간을 분 단위로 변환
+      if (currentTime >= classStartTime) {
+        setNowClassTimeIndex(i);
+        scrollToIndex(i);
+        break;
+      }
+    }
+  }, [itemsScrollIndex])
+
    
   return (
     <View style={styles.screen}>
@@ -58,21 +84,16 @@ const MainScreen = () => {
         style={styles.timetableContainer} 
         contentContainerStyle={styles.timetableContent}
       >
-        {/* onSetHeight={(height) => console.log(height)} */}
-        {[
-          "1교시 | 오전 08 : 50",
-          "2교시 | 오전 09 : 50", 
-          "3교시 | 오전 10 : 50", 
-          "4교시 | 오전 11 : 50",
-          "5교시 | 오후 13 : 30ewpreqwrmqwkeqwqmrlew\nqweqe\nqewqwe\nqwe\nqwemrlqwlrmlwqrmwqr", 
-          "6교시 | 오후 14 : 30",
-          "7교시 | 오후 15 : 30"].map((header, index) => (
+        {timetable.map((header, index) => (
             <TimetableCard onSetHeight={(height) => {
-              const itemScrollIndex = itemsScrollIndex;
-              itemScrollIndex[index] = height;
-              setItemScrollIndex(itemScrollIndex);
-              console.log(itemScrollIndex);
-            }} header={header} text="테스트" isSelect={header === "1교시 | 오전 08 : 50"}/>
+              setItemScrollIndex((prevItemsScrollIndex) => {
+                const updatedItemsScrollIndex = [...prevItemsScrollIndex];
+                updatedItemsScrollIndex[index] = height;
+                console.log(updatedItemsScrollIndex);
+                return updatedItemsScrollIndex;
+              });
+            }} header={`${header.classTime} ${header.realTime}`} text={header.subject} isSelect={index === nowClassTimeIndex}
+              key={index}/>
           ))
           }
           <View style={{height: 400}}/>
@@ -119,7 +140,7 @@ const TimetableCard= ({header, text, isSelect, onSetHeight}: TimetableCardProps)
   return (
     <View 
       onLayout={(event) => {
-        console.log("hi");
+        // console.log("hi");
         
         onSetHeight(event.nativeEvent.layout.height);
       }}
