@@ -3,6 +3,7 @@ import { Timetable } from "../types/timetable";
 import axios, { Axios } from "axios";
 import { baseUrl, customAxios } from "../api/sogotimeApi";
 import { print } from "@gorhom/bottom-sheet/lib/typescript/utilities/logger";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getCurrentClassTime = (index: number) => {
   480
@@ -62,13 +63,14 @@ export const useTimetable = () => {
   const [itemsScrollIndex, setItemScrollIndex] = useState<number[]>([]);
 
   const getTimetable = async () => {
-    // try {
-    
+    const gradeNum = await AsyncStorage.getItem('gradeNum');
+    const classNum = await AsyncStorage.getItem('classNum');
+
     console.log("called api : " + baseUrl + '/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=2&classNum=1&day=28');
     console.log("Axios 기본 설정:", axios.defaults);
-    
+
     const value = await axios.get<Timetable[]>(
-      `${baseUrl}/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=2&classNum=1&day=28`,
+      `${baseUrl}/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=${gradeNum}&classNum=${classNum}&day=28`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -87,10 +89,10 @@ export const useTimetable = () => {
       }
     }));
     console.log(newData);
-      
+
     // } catch (error) {
     //   console.log(error);
-      
+
     //   setTimetable([]);
     // }
   }
