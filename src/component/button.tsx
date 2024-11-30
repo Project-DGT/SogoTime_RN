@@ -19,7 +19,8 @@ const SogoTimeButton = (
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 16.5,
-    }} 
+      marginBottom: 36,
+    }}
     underlayColor={'rgba(0, 0, 0, 0.08)'}
     onPress={onPress}
     disabled={disabled}

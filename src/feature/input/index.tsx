@@ -3,10 +3,15 @@ import { DodamTextField } from "../../component/textfield";
 import { useState } from "react";
 import ArrowLeftIcon from "../../../assets/ic_arrow_left.png";
 import SogoTimeButton from "../../component/button";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation';
+import {useNavigation} from '@react-navigation/native';
 
 const InputScreen = () => {
-
   const [value, setValue] = useState<string>('');
+  type OverviewScreenNavigationProps = StackNavigationProp<RootStackParamList, 'InputScreen'>;
+  const navigation = useNavigation<OverviewScreenNavigationProps>();
 
   const onValueChange = (newValue: string) => {
     if (newValue.length > value.length) {
@@ -14,47 +19,79 @@ const InputScreen = () => {
       const lastChar = newValue.slice(-1);
       if (value === '') {
         setValue(`${lastChar}학년`);
-      } else if (!value.includes('번')) {
-        setValue(`${value} ${lastChar}번`);
+      } else if (!value.includes('반')) {
+        setValue(`${value} ${lastChar}반`);
       } else {
         setValue(
-          value.replace(/번$/, `${lastChar}번`) // 기존 '번' 뒤에 이어 붙임
+          value.replace(/반$/, `${lastChar}반`) // 기존 '번' 뒤에 이어 붙임
         );
       }
     } else {
       // 문자 제거
-      if (value.includes('번')) {
-        setValue(value.replace(/\s?\d+번$/, '')); // 'X번' 제거
+      if (value.includes('반')) {
+        setValue(value.replace(/\s?\d+반$/, '')); // 'X번' 제거
       } else if (value.includes('학년')) {
         setValue('');
       }
     }
   }
 
-  return <View style={styles.container}>
-    <View style={styles.topbarContainer}>
-      <Image source={ArrowLeftIcon} style={styles.topbarBackIcon}/>
+  const handleNextPress = async () => {
+    try {
+      // Extract grade and class numbers
+      const match = value.match(/(\d+)학년\s*(\d+)반/);
+
+      if (match) {
+        const [, gradeNum, classNum] = match;
+
+        // Save to AsyncStorage
+        await AsyncStorage.setItem('gradeNum', gradeNum);
+        await AsyncStorage.setItem('classNum', classNum);
+
+        // Optional: Add navigation or next screen logic here
+        console.log('Saved grade and class:', gradeNum, classNum);
+        navigation.navigate('MainScreen');
+
+      } else {
+        // Handle invalid input
+        console.log('Invalid input format');
+        // Optionally show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error saving to AsyncStorage:', error);
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.topbarContainer}>
+        <Image source={ArrowLeftIcon} style={styles.topbarBackIcon}/>
+      </View>
+      <View style={styles.contentContainer}>
+        <Text style={styles.contentTitleText}>학년을 입력해주세요.</Text>
+        <View style={{height: 16}}/>
+        <DodamTextField
+          value={value}
+          label="학년 / 반"
+          onValueChange={(value) => {
+            onValueChange(value);
+          }}
+          isError={false}
+          inputMode="numeric"
+          selection={{ start: value.length, end: value.length }}
+          onRemoveRequest={() => {
+            setValue('');
+          }}
+        />
+        <View style={{flex: 1}}></View>
+        <SogoTimeButton
+          text="다음으로"
+          onPress={handleNextPress}
+        />
+        <View style={{height: 8}}/>
+      </View>
     </View>
-    <View style={styles.contentContainer}>
-      <Text style={styles.contentTitleText}>학년을 입력해주세요.</Text>
-      <View style={{height: 16}}/>
-      <DodamTextField 
-        value={value} 
-        label="학생정보" 
-        onValueChange={(value) => {
-          onValueChange(value);
-        }} 
-        isError={false} 
-        inputMode="numeric"
-        selection={{ start: value.length, end: value.length }}
-        onRemoveRequest={() => {
-          setValue('');
-        }}/>
-      <View style={{flex: 1}}></View>
-      <SogoTimeButton text="다음으로" onPress={() => {}}/>
-      <View style={{height: 8}}/>
-    </View>
-  </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -87,11 +124,11 @@ const styles = StyleSheet.create({
   },
   contentTitleText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#000',
-    lineHeight: 31.2
+    lineHeight: 31.2,
+    marginTop: 36,
   }
 })
-
 
 export default InputScreen;

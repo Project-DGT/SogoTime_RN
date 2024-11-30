@@ -1,16 +1,46 @@
-import { Image, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableHighlight, View } from "react-native";
 import ArrowLeftIcon from "../../../assets/ic_arrow_left.png";
 import AvatarIcon from "../../../assets/ic_avatar.png";
 import ChevronRightIcon from "../../../assets/ic_chevron_right.png";
-import { isEnabled } from "react-native/Libraries/Performance/Systrace";
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetModal, BottomSheetModalProvider, BottomSheetView } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetModalProvider, BottomSheetView } from '@gorhom/bottom-sheet';
 import { DodamTextField } from "../../component/textfield";
 import SogoTimeButton from "../../component/button";
-import Animated, { interpolate } from "react-native-reanimated";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation';
+import {useNavigation} from '@react-navigation/native';
 
 const SettingScreen = () => {
+  const [studentInfo, setStudentInfo] = useState({
+    gradeNum: '',
+    classNum: ''
+  });
+  const [editingInfo, setEditingInfo] = useState('');
+  type OverviewScreenNavigationProps = StackNavigationProp<RootStackParamList, 'SettingScreen'>;
+  const navigation = useNavigation<OverviewScreenNavigationProps>();
+
+  // Load student info on component mount
+  useEffect(() => {
+    const loadStudentInfo = async () => {
+      try {
+        const [gradeNum, classNum] = await Promise.all([
+          AsyncStorage.getItem('gradeNum') || '',
+          AsyncStorage.getItem('classNum') || ''
+        ]);
+
+        // @ts-ignore
+        setStudentInfo({ gradeNum, classNum });
+        setEditingInfo(`${gradeNum}학년 ${classNum}반`);
+      } catch (error) {
+        console.error('Error loading student info:', error);
+      }
+    };
+
+    loadStudentInfo();
+  }, []);
+
   const renderBackdrop = useCallback(
     (props: any) => <BottomSheetBackdrop {...props} pressBehavior="close" />,
     [],
@@ -26,9 +56,68 @@ const SettingScreen = () => {
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
+
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
   }, []);
+
+  // Edit value change handler (similar to previous input screen logic)
+  const onValueChange = (newValue: string) => {
+    if (newValue.length > editingInfo.length) {
+      // 문자 추가
+      const lastChar = newValue.slice(-1);
+      if (editingInfo === '') {
+        setEditingInfo(`${lastChar}학년`);
+      } else if (!editingInfo.includes('반')) {
+        setEditingInfo(`${editingInfo} ${lastChar}반`);
+      } else {
+        setEditingInfo(
+          editingInfo.replace(/반$/, `${lastChar}반`)
+        );
+      }
+    } else {
+      // 문자 제거
+      if (editingInfo.includes('반')) {
+        setEditingInfo(editingInfo.replace(/\s?\d+반$/, '')); // 'X번' 제거
+      } else if (editingInfo.includes('학년')) {
+        setEditingInfo('');
+      }
+    }
+  }
+
+  // Save student info
+  const handleSaveInfo = async () => {
+    try {
+      // Extract grade and class numbers
+      const match = editingInfo.match(/(\d+)학년\s*(\d+)반/);
+
+      if (match) {
+        const [, gradeNum, classNum] = match;
+
+        // Save to AsyncStorage
+        await Promise.all([
+          AsyncStorage.setItem('gradeNum', gradeNum),
+          AsyncStorage.setItem('classNum', classNum)
+        ]);
+
+        // Update local state
+        setStudentInfo(prev => ({
+          ...prev,
+          gradeNum,
+          classNum
+        }));
+
+        // Close bottom sheet
+        bottomSheetModalRef.current?.dismiss();
+      } else {
+        // Handle invalid input
+        console.log('Invalid input format');
+        // Optionally show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error saving to AsyncStorage:', error);
+    }
+  }
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -37,7 +126,7 @@ const SettingScreen = () => {
           <TouchableHighlight
             style={styles.topbarIcon}
             underlayColor={'rgba(0, 0, 0, 0.08)'}
-            onPress={() => {}}
+            onPress={() => navigation.goBack()}
           >
             <Image source={ArrowLeftIcon}/>
           </TouchableHighlight>
@@ -47,15 +136,15 @@ const SettingScreen = () => {
           <View style={styles.profileContainer}>
             <Image source={AvatarIcon} style={styles.profileImage}/>
             <View style={styles.profileTextContainer}>
-              <Text style={styles.profileText}>1학년 3반</Text>
+              <Text style={styles.profileText}>{`${studentInfo.gradeNum}학년 ${studentInfo.classNum}반`}</Text>
               <TouchableHighlight
                 style={{
                   backgroundColor: "#ffffff",
                   borderRadius: 25,
-                }} 
+                }}
                 underlayColor={'rgba(0, 0, 0, 0.08)'}
                 onPress={handlePresentModalPress}>
-              <Text style={styles.profileEditText}>정보 수정</Text>
+                <Text style={styles.profileEditText}>정보 수정</Text>
               </TouchableHighlight>
             </View>
           </View>
@@ -70,29 +159,29 @@ const SettingScreen = () => {
           index={1}
           snapPoints={snapPoints}
           onChange={handleSheetChanges}
-          backdropComponent={renderBackdrop} 
+          backdropComponent={renderBackdrop}
         >
           <BottomSheetView style={styles.bottomSheetContainer}>
-            {/* <View style={styles.bottomSheetHandleContainer}>
-              <View style={styles.bottomSheetHandleIndicator}></View>
-            </View> */}
             <DodamTextField
               label="학생정보"
-              placeholder="이름을 입력해주세요"
-              value="1학년 4반"
-              onValueChange={(value => {
-
-              })}/>
+              placeholder="학년/반을 입력해주세요"
+              value={editingInfo}
+              onValueChange={onValueChange}
+              inputMode="numeric"
+              selection={{
+                start: editingInfo.length,
+                end: editingInfo.length
+              }}
+              onRemoveRequest={() => setEditingInfo('')}
+            />
 
             <View style={{
               height: 24,
             }}/>
-            
+
             <SogoTimeButton
               text="저장하기"
-              onPress={() => {}}/>
-            
-
+              onPress={handleSaveInfo}/>
           </BottomSheetView>
         </BottomSheetModal>
       </BottomSheetModalProvider>
@@ -100,6 +189,7 @@ const SettingScreen = () => {
   )
 }
 
+// SettingItem component remains the same as in the original code
 interface SettingItemProps {
   title: string;
   onPress?: () => void;
@@ -112,7 +202,7 @@ const SettingItem = ({title, onPress, description}: SettingItemProps) => {
       style={{
         backgroundColor: "#ffffff",
         borderRadius: 25,
-      }} 
+      }}
       underlayColor={'rgba(0, 0, 0, 0.08)'}
       onPress={onPress}
       disabled={onPress === undefined}

@@ -1,6 +1,11 @@
-import { Button, Image, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native"
+import { Button, Image, ScrollView, StyleSheet, Text,  TouchableOpacity, View } from "react-native"
 import GearIcon from "../../../assets/ic_gear.png"
 import { useEffect, useRef, useState } from "react";
+import { TimetableCard } from "../../component/main/TimetableCard";
+import { WeekdayCard } from "../../component/main/WeekdayCard";
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../../navigation';
+import {useNavigation} from '@react-navigation/native';
 
 const MainScreen = () => {
 
@@ -8,12 +13,14 @@ const MainScreen = () => {
   // const []
   const scrollRef = useRef<ScrollView>(null);
   const [itemsScrollIndex, setItemScrollIndex] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  type OverviewScreenNavigationProps = StackNavigationProp<RootStackParamList, 'MainScreen'>;
+  const navigation = useNavigation<OverviewScreenNavigationProps>();
 
 
   setTimeout(() => {
     if (!scrollRef.current) return
     console.log(itemsScrollIndex);
-    
+
 
     const getIndex = 1;
     let offsetY = 0.0;
@@ -25,11 +32,11 @@ const MainScreen = () => {
       offsetY += 16;
     }
     console.log(offsetY);
-    
- 
+
+
     scrollRef.current.scrollTo({y: offsetY, animated: true})
   }, 1000);
-   
+
   return (
     <View style={styles.screen}>
       <View style={styles.headerContainer}>
@@ -38,14 +45,16 @@ const MainScreen = () => {
           <Text style={styles.titleText}>2024월 10월 28일!</Text>
         </View>
         <View style={styles.spacerStart} />
-        <Image source={GearIcon} style={styles.settingIcon} />
+        <TouchableOpacity onPress={() => navigation.navigate('SettingScreen')}>
+          <Image source={GearIcon} style={styles.settingIcon} />
+        </TouchableOpacity>
       </View>
 
       <View style={{height: 24}}/>
       <View style={styles.weekdaysContainer}>
         { ["월요일 / Mon", "화요일 / Tue", "수요일 / Wed", "목요일 / Thu", "금요일 / Fri"].map((weekday) => (
           <WeekdayCard
-            text={weekday} 
+            text={weekday}
             isSelect={weekday === selectedWeekday}
             onClick={() => setSelectedWeekday(weekday)}
           />
@@ -53,18 +62,18 @@ const MainScreen = () => {
       </View>
 
       <View style={{height: 24}}/>
-      <ScrollView 
+      <ScrollView
         ref={scrollRef}
-        style={styles.timetableContainer} 
+        style={styles.timetableContainer}
         contentContainerStyle={styles.timetableContent}
       >
         {/* onSetHeight={(height) => console.log(height)} */}
         {[
           "1교시 | 오전 08 : 50",
-          "2교시 | 오전 09 : 50", 
-          "3교시 | 오전 10 : 50", 
+          "2교시 | 오전 09 : 50",
+          "3교시 | 오전 10 : 50",
           "4교시 | 오전 11 : 50",
-          "5교시 | 오후 13 : 30ewpreqwrmqwkeqwqmrlew\nqweqe\nqewqwe\nqwe\nqwemrlqwlrmlwqrmwqr", 
+          "5교시 | 오후 13 : 30",
           "6교시 | 오후 14 : 30",
           "7교시 | 오후 15 : 30"].map((header, index) => (
             <TimetableCard onSetHeight={(height) => {
@@ -81,88 +90,11 @@ const MainScreen = () => {
   )
 }
 
-interface WeekdayCardProps {
-  text: string;
-  isSelect: boolean;
-  onClick: () => void;
-}
-
-const WeekdayCard = ({text, isSelect, onClick}: WeekdayCardProps ) => {
-  return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: isSelect ? 'rgba(73, 226, 150, 0.45);' : 'rgba(214, 214, 214, 0.29)',
-        borderRadius: 25,
-      }} 
-      onPress={onClick}
-    >
-      <Text style={{
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 14,
-        fontWeight: '700',
-        lineHeight: 22,
-        color: isSelect ? '#28905C' : 'rgba(0, 0, 0, 0.29)',
-      }}>{text}</Text>
-    </TouchableOpacity>
-  )
-}
-
-interface TimetableCardProps {
-  header: string,
-  text: string,
-  isSelect: boolean,
-  onSetHeight: (height: number) => void,
-}
-
-const TimetableCard= ({header, text, isSelect, onSetHeight}: TimetableCardProps) => {
-  return (
-    <View 
-      onLayout={(event) => {
-        console.log("hi");
-        
-        onSetHeight(event.nativeEvent.layout.height);
-      }}
-      style={{
-        width: '100%',
-        backgroundColor: isSelect? "rgba(215, 248, 232, 0.54)": "#EDEDED",
-        borderRadius: 24,
-        boxShadow: "2px 5px 3px 0px rgba(136, 134, 144, 0.20)",
-        paddingVertical: 19.5,
-        paddingStart: 20,
-        flexDirection: 'column',
-      }}>
-      <Text style={{
-        fontSize: 10,
-        fontWeight: 500,
-        lineHeight: 12,
-        color: isSelect? '#1B6D44': "#000000",
-        letterSpacing: 0.15,
-      }}>{header}</Text>
-      <Text style={{
-        marginTop: 4,
-        fontSize: 16,
-        fontWeight: 600,
-        lineHeight: 24,
-        color: '#000000',
-        letterSpacing: 0.24
-      }}>{text}</Text>
-
-      <View style={{
-        width: '60%',
-        height: 5,
-        backgroundColor: isSelect? '#3FD289': "rgba(28, 28, 28, 0.2)",
-        borderRadius: 3,
-        marginTop: 16,
-      }}/>
-    </View>
-  )
-}
 
 const styles = StyleSheet.create({
   screen: {
     height: '100%',
-    width: '100%', 
+    width: '100%',
     flexDirection: 'column',
     // backgroundColor: 'red',
   },
@@ -212,9 +144,7 @@ const styles = StyleSheet.create({
     rowGap: 8,
     columnGap: 12,
   },
-
   timetableContainer: {
-    
     width: "100%",
     flexDirection: 'column',
     paddingHorizontal: 16,
