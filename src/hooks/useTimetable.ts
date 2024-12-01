@@ -58,19 +58,22 @@ const getTimetableRealTime = (item: Timetable) => {
   }
 }
 
-export const useTimetable = () => {
+export const useTimetable = (date: Date) => {
   const [timetable, setTimetable] = useState<Timetable[]>([]);
   const [itemsScrollIndex, setItemScrollIndex] = useState<number[]>([]);
 
-  const getTimetable = async () => {
+  const getTimetable = async (_date: Date = date) => {
+    setTimetable([]);
+    setItemScrollIndex([]);
     const gradeNum = await AsyncStorage.getItem('gradeNum');
     const classNum = await AsyncStorage.getItem('classNum');
-
-    console.log("called api : " + baseUrl + '/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=2&classNum=1&day=28');
     console.log("Axios 기본 설정:", axios.defaults);
 
+    console.log(`${baseUrl}/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=${gradeNum}&classNum=${classNum}&day=${_date.getDate()}&month=${_date.getMonth() + 1}`);
+    
+
     const value = await axios.get<Timetable[]>(
-      `${baseUrl}/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=${gradeNum}&classNum=${classNum}&day=28`,
+      `${baseUrl}/schedule/get-schedule?schoolName=대구소프트웨어고등학교&grade=${gradeNum}&classNum=${classNum}&day=${_date.getDate()}&month=${_date.getMonth() + 1}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -101,5 +104,9 @@ export const useTimetable = () => {
     getTimetable()
   }, [])
 
-  return {timetable, itemsScrollIndex, setItemScrollIndex};
+  const newLoadTimeTable = (date: Date) => {
+    getTimetable(date);
+  }
+
+  return {timetable, itemsScrollIndex, setItemScrollIndex, newLoadTimeTable};
 }

@@ -25,7 +25,7 @@ const screenOptions: StackNavigationOptions = {
 };
 
 export default function RootStack() {
-  const [initialRoute, setInitialRoute] = useState<string | null>(null); // 초기 화면 설정 상태
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null); // 초기 화면 설정 상태
 
   useEffect(() => {
     const initializeApp = async () => {

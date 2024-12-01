@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { DodamTextField } from "../../component/textfield";
 import { useState } from "react";
 import ArrowLeftIcon from "../../../assets/ic_arrow_left.png";
@@ -65,7 +65,9 @@ const InputScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.topbarContainer}>
-        <Image source={ArrowLeftIcon} style={styles.topbarBackIcon}/>
+        <TouchableOpacity onPress={() => navigation.pop(  )}>
+          <Image source={ArrowLeftIcon} style={styles.topbarBackIcon} />
+        </TouchableOpacity>
       </View>
       <View style={styles.contentContainer}>
         <Text style={styles.contentTitleText}>학년을 입력해주세요.</Text>
